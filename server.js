@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises'
 import express from 'express'
 import { Transform } from 'node:stream'
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth.js";
 
 // Constants
 const isProduction = process.env.NODE_ENV === 'production'
@@ -15,6 +17,8 @@ const templateHtml = isProduction
 
 // Create http server
 const app = express()
+
+app.all('/api/auth/{*any}', toNodeHandler(auth));
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
