@@ -4,6 +4,7 @@ import { Transform } from 'node:stream'
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 
+
 // Constants
 const isProduction = process.env.NODE_ENV === 'production'
 const port = process.env.PORT || 5173
@@ -19,6 +20,17 @@ const templateHtml = isProduction
 const app = express()
 
 app.all('/api/auth/{*any}', toNodeHandler(auth));
+
+app.get('/dashboard', async (req, res, next)=>{
+  console.log("hi")
+  const session = await auth.api.getSession({headers: req.headers})
+
+  if (!session){
+    return res.redirect('/')
+  }
+
+  return next()
+})
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
