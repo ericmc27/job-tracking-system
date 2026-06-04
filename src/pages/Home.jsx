@@ -1,18 +1,22 @@
 import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { signIn } from "../../lib/auth-client.js"
+import { Pulsar } from 'ldrs/react'
+import 'ldrs/react/Pulsar.css'
 
 function Home() {
-  const [loginData, setLoginData] = useState({ email: '', password: '' })
+  const { register, handleSubmit, reset, setError, clearErrors, formState: { errors, isSubmitting } } = useForm()
   const [showLogin, setShowLogin] = useState(false)
 
   const handleCloseLogin = () => {
     setShowLogin(false)
-    setLoginData(() => ({ email: '', password: '' }))
+    reset()
   }
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault()
-    const { email, password } = loginData
+  const onSubmit = async (data) => {
+    const { email, password } = data
+
+    //
     const res = await signIn.email({ email, password },
       {
         onSuccess: (ctx) => {
@@ -20,34 +24,45 @@ function Home() {
         },
 
         onError: (ctx) => {
-          alert("An error")
+          setError("loginError", {
+            type: "manual",
+            message: "Invalid email or password"
+          })
+
+          setTimeout(()=>{
+            clearErrors("loginError")
+          }, 3000)
         }
       })
-  }
 
-  const handleInputChange = (e) => {
-    const { id, value } = e.currentTarget
-    setLoginData((prev) => ({ ...prev, [id]: value }))
+      //
   }
 
   return (
-    <div className='min-h-screen'>
-      <header>
-        <nav className="flex ">
-          <button onClick={() => setShowLogin(true)} className="hover:cursor-pointer">Sign in</button>
+    <div className='min-h-screen bg-[#F9F8F5]'>
+      <header className="">
+        <nav className="flex items-center border-b border-[#DFDBD3] h-15">
+          <h1 className="ms-30">ApplyWise</h1>
+
+          <div className="right-30 absolute">
+            <button onClick={() => setShowLogin(true)} className="hover:cursor-pointer hover:text-orange-500 me-7">Sign in</button>
+            <button className="bg-orange-500 text-white rounded p-2.5 hover:cursor-pointer">Get Started <span className="">&rarr;</span></button>
+          </div>
         </nav>
+
       </header>
 
       <main>
         {
           showLogin &&
           <div onClick={handleCloseLogin} className="fixed bg-black/50 inset-0 flex items-center justify-center" >
-            <form onSubmit={handleFormSubmit} onClick={(e) => e.stopPropagation()} className="flex flex-col items-center justify-center border h-100 w-100 bg-white">
+            <form onSubmit={handleSubmit(onSubmit)} onClick={(e) => e.stopPropagation()} className="relative flex flex-col items-center justify-center gap-3.5 rounded h-110 w-100 bg-white">
               <label htmlFor="email">EMAIL</label>
-              <input id="email" type="email" className="border w-55" onChange={(e) => handleInputChange(e)} value={loginData.email} />
+              <input id="email" type="email" className={`${errors.loginError && "border-red-500"} h-7.5 border outline-orange-500 rounded w-55`} {...register("email", {required: true})} />
               <label htmlFor="password">PASSWORD</label>
-              <input id="password" type="password" className="border w-55" onChange={(e) => handleInputChange(e)} value={loginData.password} />
-              <button type="submit" className="border w-55">LOGIN</button>
+              <input id="password" type="password" className={`${errors.loginError && "border-red-500"} h-7.5 border outline-orange-500 rounded w-55`} {...register("password", {required: true})} />
+              <button type="submit" className="border rounded h-9 w-55 bg-orange-500 text-white mt-6.5 hover:cursor-pointer">LOGIN</button>
+              { isSubmitting && <div className="absolute top-12.5"><Pulsar size="40" speed="1.75" color="#f97316"/></div>}
             </form>
           </div>
         }
