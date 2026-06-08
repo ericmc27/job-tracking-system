@@ -1,8 +1,10 @@
 import fs from "node:fs/promises";
 import express from "express";
+import { S3Client } from "@aws-sdk/client-s3";
 import { Transform } from "node:stream";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
+import { apiRouter } from "./routes/api.routes.js";
 
 // Constants
 const isProduction = process.env.NODE_ENV === "production";
@@ -18,8 +20,17 @@ const templateHtml = isProduction
 // Create http server
 const app = express();
 
+export const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
 app.all("/api/auth/{*any}", toNodeHandler(auth));
+
+app.use("/api", apiRouter);
 
 app.get("/dashboard", async (req, res, next) => {
   const session = await auth.api.getSession({ headers: req.headers });

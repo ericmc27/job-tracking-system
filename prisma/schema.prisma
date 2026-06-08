@@ -20,8 +20,10 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  resumeUrl     String?
   sessions      Session[]
   accounts      Account[]
+
 
   @@unique([email])
   @@map("user")

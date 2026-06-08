@@ -1,8 +1,10 @@
+import ResumeUpload from "../components/ResumeUpload"
+
 function Dashboard(){
 
   return(
     <div>
-      This is my dashboard
+      <ResumeUpload/>
     </div>
   )
 }
